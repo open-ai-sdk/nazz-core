@@ -30,16 +30,16 @@ jobs:
       CARGO_BUILD_JOBS: "2"
       CARGO_INCREMENTAL: "0"
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.98.0
       - name: Create or update Release PR
         id: release-plz
-        uses: release-plz/action@436af255fc09c66d1787b4c2bad4fc00f267d6e1 # v0.5
+        uses: release-plz/action@v0.5
         with:
           command: release-pr
           version: 0.4.1
@@ -68,11 +68,11 @@ jobs:
       CARGO_INCREMENTAL: "0"
       HAS_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN != '' }}
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.98.0
       - name: Check publishing prerequisites
@@ -84,7 +84,7 @@ jobs:
           grep -Eq '^release_always[[:space:]]*=[[:space:]]*false[[:space:]]*$' release-plz.toml
       - name: Publish merged Release PR with registry token
         if: env.HAS_REGISTRY_TOKEN == 'true'
-        uses: release-plz/action@436af255fc09c66d1787b4c2bad4fc00f267d6e1 # v0.5
+        uses: release-plz/action@v0.5
         with:
           command: release
           version: 0.4.1
@@ -93,7 +93,7 @@ jobs:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
       - name: Publish merged Release PR with trusted publishing
         if: env.HAS_REGISTRY_TOKEN != 'true'
-        uses: release-plz/action@436af255fc09c66d1787b4c2bad4fc00f267d6e1 # v0.5
+        uses: release-plz/action@v0.5
         with:
           command: release
           version: 0.4.1
