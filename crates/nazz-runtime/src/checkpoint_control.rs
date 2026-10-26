@@ -2,8 +2,8 @@
 //! compiled Rig capability. This is not a scheduler or a launch permission.
 use std::time::Duration;
 
-use agent_core::{ActorGrant, AttemptId, HARNESS_FORMAT};
-use agent_storage::{
+use nazz_core::{ActorGrant, AttemptId, HARNESS_FORMAT};
+use nazz_storage::{
     CHECKPOINT_FORMAT_VERSION, CheckpointRecord, ExecutionStore, StorageError as StoreError,
 };
 use thiserror::Error;

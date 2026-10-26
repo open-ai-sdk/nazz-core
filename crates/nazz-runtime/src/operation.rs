@@ -8,8 +8,8 @@
 use std::future::Future;
 use std::time::Duration;
 
-use agent_core::{ActorGrant, AttemptId, EffectState, trace_effect_identity};
-use agent_storage::{
+use nazz_core::{ActorGrant, AttemptId, EffectState, trace_effect_identity};
+use nazz_storage::{
     CHECKPOINT_FORMAT_VERSION, CheckpointRecord, EffectLaunch, ExecutionStore, LaunchSettlement,
     TracedClaim,
 };

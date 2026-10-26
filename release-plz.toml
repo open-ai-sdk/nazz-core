@@ -1,0 +1,21 @@
+[workspace]
+git_only = false
+release_always = false
+dependencies_update = false
+git_tag_name = "{{ package }}-v{{ version }}"
+
+[[package]]
+name = "nazz-core"
+version_group = "core"
+
+[[package]]
+name = "nazz-storage"
+version_group = "core"
+
+[[package]]
+name = "nazz-runtime"
+version_group = "core"
+
+[[package]]
+name = "nazz-sandbox"
+version_group = "core"

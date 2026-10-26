@@ -7,8 +7,8 @@
 
 use std::time::Duration;
 
-use agent_core::{ActorGrant, AttemptId};
-use agent_storage::{ExecutionStore, StorageError as StoreError};
+use nazz_core::{ActorGrant, AttemptId};
+use nazz_storage::{ExecutionStore, StorageError as StoreError};
 use thiserror::Error;
 
 /// Trusted configuration order, independent of task parameters.

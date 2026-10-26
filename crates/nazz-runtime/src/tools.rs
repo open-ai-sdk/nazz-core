@@ -1,12 +1,12 @@
 //! Trusted host tool catalog. Task parameters never add tools or grants.
-use agent_core::digest_json;
+use nazz_core::digest_json;
 use rig::{completion::ToolDefinition, message::ToolName};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::{RuntimeError, ToolRevision, pending_metadata_has_credential};
 
-pub use agent_core::TOOL_REGISTRY_FORMAT;
+pub use nazz_core::TOOL_REGISTRY_FORMAT;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct RegisteredTool {

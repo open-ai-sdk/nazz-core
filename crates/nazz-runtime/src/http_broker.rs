@@ -15,12 +15,12 @@ use std::time::Duration;
 
 use sha2::{Digest, Sha256};
 
-use agent_core::{
+use nazz_core::{
     ActorGrant, AttemptId, BrokerDeny, EffectClaim, EffectId, EffectState, EndpointGrant,
     ProviderDispatch, TenantId, TracedEffectIdentity, authorize_dispatch, digest_json,
     effect_id_for, ordered_object_bytes, trace_effect_identity,
 };
-use agent_storage::{
+use nazz_storage::{
     EffectLaunch, ExecutionStore, LaunchSettlement, StorageError as StoreError, TracedClaim,
 };
 use serde_json::{Value, json};
@@ -89,17 +89,17 @@ pub fn exact_local_test_endpoint(tenant: TenantId, port: u16) -> (EndpointGrant,
         scheme: "http".into(),
         host: "127.0.0.1".into(),
         port,
-        route: agent_core::CredentialRoute::ApiKey,
+        route: nazz_core::CredentialRoute::ApiKey,
         allow_private: true,
         pinned_peer: Some("127.0.0.1".into()),
     };
     let dispatch = ProviderDispatch {
         tenant_id: tenant,
-        api: agent_core::ProviderApi::CustomCompatible,
+        api: nazz_core::ProviderApi::CustomCompatible,
         scheme: "http".into(),
         host: "127.0.0.1".into(),
         port,
-        credential: agent_core::CredentialRoute::ApiKey,
+        credential: nazz_core::CredentialRoute::ApiKey,
         resolved_peers: vec!["127.0.0.1".into()],
         redirect_count: 0,
     };

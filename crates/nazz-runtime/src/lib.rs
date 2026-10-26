@@ -24,11 +24,11 @@ pub mod host_control;
 pub mod provider;
 pub mod worker;
 
-use agent_core::{
+use nazz_core::{
     AttemptId, AttemptStatus, EffectState, HARNESS_FORMAT, Settlement, harness_format_of,
     settle_harness_format, trace_effect_identity,
 };
-use agent_storage::{
+use nazz_storage::{
     CHECKPOINT_FORMAT_VERSION, CheckpointRecord, EffectJournal, EffectLaunch, ExecutionStore,
     LaunchSettlement, StorageError as StoreError, TracedClaim, VerifiedExecutionContext,
 };
@@ -363,7 +363,7 @@ impl RigSession {
                     )
                     .map_err(|_| RuntimeError::Rig("local model input refused".into()))?;
                     let request = prepared.apply(rig::completion::CompletionRequest::new(prompt));
-                    agent_core::serialized_input_bytes(&request, self.max_model_input_bytes)
+                    nazz_core::serialized_input_bytes(&request, self.max_model_input_bytes)
                         .map_err(StoreError::from)?;
                 }
                 self.run.advertise_tools(index, definitions);
@@ -404,7 +404,7 @@ impl RigSession {
         &mut self,
         journal: &J,
         store: &S,
-        grant: &agent_core::ActorGrant,
+        grant: &nazz_core::ActorGrant,
         holder: &str,
         scope: &str,
         mut execute: F,
@@ -734,7 +734,7 @@ fn dependent_required_has_credential(value: &Value) -> bool {
 
 async fn cancellation_committed(
     store: &impl ExecutionStore,
-    grant: &agent_core::ActorGrant,
+    grant: &nazz_core::ActorGrant,
     attempt_id: &AttemptId,
 ) -> Result<bool, RuntimeError> {
     match store.read_attempt(grant, attempt_id).await? {

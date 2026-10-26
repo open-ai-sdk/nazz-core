@@ -487,8 +487,8 @@ pub fn embedded_source_sha256() -> String {
 
 pub fn wire_fixture() -> serde_json::Value {
     serde_json::json!({
-        "source": "agent-core-serde",
-        "source_files": [{"path": "crates/agent-core/src/lib.rs", "sha256": embedded_source_sha256()}],
+        "source": "nazz-core-serde",
+        "source_files": [{"path": "crates/nazz-core/src/lib.rs", "sha256": embedded_source_sha256()}],
         "harness_format": HARNESS_FORMAT,
         "events": sample_wire_events(),
         "newer_format_probe": {"harness_format": 9}

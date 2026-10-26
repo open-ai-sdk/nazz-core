@@ -1,14 +1,18 @@
 [package]
-name = "agent-storage"
+name = "nazz-storage"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+license-file.workspace = true
 publish.workspace = true
+repository.workspace = true
+readme.workspace = true
+include = ["src/**", "tests/**", "build.rs", "Cargo.toml"]
 description = "Host-neutral storage ports and durable execution protocol types."
 
 [dependencies]
-agent-core.workspace = true
+nazz-core.workspace = true
 async-trait = "0.1"
 serde.workspace = true
 serde_json.workspace = true

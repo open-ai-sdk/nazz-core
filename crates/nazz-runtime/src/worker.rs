@@ -1,11 +1,11 @@
 //! UI-independent scheduling of the existing Rig step driver and Store ports.
 //! The host owns account resolution and tools; serialized state grants neither.
 
-use agent_core::{
+use nazz_core::{
     ActorGrant, AttemptId, AttemptStatus, EffectState, StopReceipt, trace_effect_identity,
 };
-use agent_storage::dispatch::{DispatchIntent, DispatchPhase, PollOutcome};
-use agent_storage::{
+use nazz_storage::dispatch::{DispatchIntent, DispatchPhase, PollOutcome};
+use nazz_storage::{
     CHECKPOINT_FORMAT_VERSION, EffectJournal, EffectLaunch, ExecutionStore, LaunchSettlement,
     StorageError as StoreError, TracedClaim,
 };
@@ -45,8 +45,8 @@ pub trait WorkerHost: Sync {
     fn execute_model(
         &self,
         grant: &ActorGrant,
-        account: &agent_core::AccountReference,
-        _effect: &agent_core::EffectClaim,
+        account: &nazz_core::AccountReference,
+        _effect: &nazz_core::EffectClaim,
         provider: &ProviderConfig,
         request: CompletionRequest,
         prepared: rig::run::prepare::PreparedRequest,
@@ -87,7 +87,7 @@ pub trait WorkerHost: Sync {
     }
 
     /// Resolve host credentials for this turn; never from durable parameters.
-    fn credential(&self, account: &agent_core::AccountReference) -> Result<String, RuntimeError>;
+    fn credential(&self, account: &nazz_core::AccountReference) -> Result<String, RuntimeError>;
     /// Completion or drop must leave no locally executing work behind.
     /// Hosts that spawn children/tasks must join their teardown before returning;
     /// an unobserved remote outcome remains in the durable effect ledger.
@@ -107,7 +107,7 @@ pub struct NativeWorker {
     pub preamble: String,
     pub tool: ToolRevision,
     pub schema: Value,
-    pub agent_id: agent_core::AgentId,
+    pub agent_id: nazz_core::AgentId,
 }
 
 impl NativeWorker {
@@ -431,7 +431,7 @@ impl NativeWorker {
                     let request = prepared
                         .clone()
                         .apply(CompletionRequest::new(prompt.clone()));
-                    agent_core::serialized_input_bytes(&request, session.max_model_input_bytes)
+                    nazz_core::serialized_input_bytes(&request, session.max_model_input_bytes)
                         .map_err(StoreError::from)?;
                     session.run.advertise_tools(turn, prepared.tools.clone());
                     let args = json!({"prepared":prepared,"prompt":prompt});
@@ -692,7 +692,7 @@ impl NativeWorker {
                                 .as_str()
                                 .ok_or(RuntimeError::NeedsReconcile)?;
                             let claim = store
-                                .read_effect(grant, &agent_core::EffectId::new(id))
+                                .read_effect(grant, &nazz_core::EffectId::new(id))
                                 .await?
                                 .ok_or(RuntimeError::NeedsReconcile)?;
                             if registry
@@ -772,7 +772,7 @@ impl NativeWorker {
     }
 }
 
-fn effect_value(claim: &agent_core::EffectClaim, call_id: &str, revision: &str) -> Value {
+fn effect_value(claim: &nazz_core::EffectClaim, call_id: &str, revision: &str) -> Value {
     json!({"effect_id":claim.effect_id,"call_id":call_id,"args_digest":claim.args_digest,
         "tool_revision":revision,"receipt":claim.receipt})
 }

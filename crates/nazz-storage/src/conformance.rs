@@ -1,6 +1,6 @@
 //! Reusable, adapter-driven conformance checks for durable storage ports.
 
-use agent_core::{
+use nazz_core::{
     AccountReference, ActorGrant, ActorId, AgentId, AttemptId, EffectClaim, EffectId, EffectState,
     ExecutionSelection, RequestId, ScopeError, StopReceipt, TenantId, WorkspaceId,
     trace_effect_identity,
@@ -579,7 +579,7 @@ where
         )
         .await?;
     require(
-        stopped == agent_core::AttemptStatus::NeedsReconcile,
+        stopped == nazz_core::AttemptStatus::NeedsReconcile,
         "Stop settled an unknown launched effect as clean cancellation",
     )?;
     let held = store
@@ -599,7 +599,7 @@ where
     };
     require(
         stopped_attempt.generation == 1
-            && stopped_attempt.status == agent_core::AttemptStatus::NeedsReconcile,
+            && stopped_attempt.status == nazz_core::AttemptStatus::NeedsReconcile,
         "unknown effect hold advanced the stopped attempt",
     )?;
 

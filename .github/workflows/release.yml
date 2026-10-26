@@ -1,0 +1,101 @@
+name: Release-plz
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ github.sha }}
+
+  release-pr:
+    needs: ci
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    concurrency:
+      group: release-plz-pr
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    env:
+      CARGO_BUILD_JOBS: "2"
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.98.0
+      - name: Create or update Release PR
+        id: release-plz
+        uses: release-plz/action@436af255fc09c66d1787b4c2bad4fc00f267d6e1 # v0.5
+        with:
+          command: release-pr
+          version: 0.4.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Run CI for Release PR
+        if: steps.release-plz.outputs.prs_created == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_BRANCH: ${{ fromJSON(steps.release-plz.outputs.pr).head_branch }}
+        run: gh workflow run ci.yml --ref "$RELEASE_BRANCH"
+
+  publish:
+    needs: ci
+    if: vars.CRATES_IO_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: crates-io
+    permissions:
+      contents: write
+      pull-requests: read
+      id-token: write
+    env:
+      CARGO_BUILD_JOBS: "2"
+      CARGO_INCREMENTAL: "0"
+      HAS_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.98.0
+      - name: Check publishing prerequisites
+        run: |
+          test -f LICENSE
+          test ! -L LICENSE
+          cargo metadata --offline --locked --no-deps --format-version 1 | jq -e '(.packages | length > 0) and all(.packages[]; .publish == ["crates-io"])'
+          grep -Eq '^git_only[[:space:]]*=[[:space:]]*false[[:space:]]*$' release-plz.toml
+          grep -Eq '^release_always[[:space:]]*=[[:space:]]*false[[:space:]]*$' release-plz.toml
+      - name: Publish merged Release PR with registry token
+        if: env.HAS_REGISTRY_TOKEN == 'true'
+        uses: release-plz/action@436af255fc09c66d1787b4c2bad4fc00f267d6e1 # v0.5
+        with:
+          command: release
+          version: 0.4.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - name: Publish merged Release PR with trusted publishing
+        if: env.HAS_REGISTRY_TOKEN != 'true'
+        uses: release-plz/action@436af255fc09c66d1787b4c2bad4fc00f267d6e1 # v0.5
+        with:
+          command: release
+          version: 0.4.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

@@ -1,6 +1,6 @@
 //! Neutral dispatch and outbox protocol values.
 
-use agent_core::{AttemptId, RequestId};
+use nazz_core::{AttemptId, RequestId};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 

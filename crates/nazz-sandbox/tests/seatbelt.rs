@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use agent_sandbox::{
+use nazz_sandbox::{
     Observation, SandboxBackend, SandboxError, SandboxSpec, UnknownReason, available_backend,
     spawn_in_grant,
 };

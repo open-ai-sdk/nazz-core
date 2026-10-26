@@ -3,10 +3,10 @@
 use std::net::SocketAddr;
 use std::time::Duration;
 
-use agent_core::{
+use bytes::Bytes;
+use nazz_core::{
     ActorGrant, CredentialRoute, EndpointGrant, ProviderApi, ProviderDispatch, authorize_dispatch,
 };
-use bytes::Bytes;
 use rig::http_client::{
     self, HttpClientExt, LazyBody, MultipartForm, Request, Response, StreamingResponse,
 };
@@ -239,7 +239,7 @@ impl HttpClientExt for GrantedHttp {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use agent_core::{ActorId, TenantId, WorkspaceId};
+    use nazz_core::{ActorId, TenantId, WorkspaceId};
     fn fixture() -> (ProviderConfig, ActorGrant) {
         let actor = ActorGrant {
             tenant_id: TenantId::new("a"),

@@ -10,15 +10,15 @@ Runtime telemetry uses `agent-model`, `agent-provider`, and `agent-stop` prefixe
 
 | Crate | Purpose |
 | --- | --- |
-| [agent-core](crates/agent-core/src/lib.rs) | Identity, scope, grants, and execution context. |
-| [agent-storage](crates/agent-storage/src/lib.rs) | Storage, journal, and dispatch traits. |
-| [agent-runtime](crates/agent-runtime/src/lib.rs) | Rig execution, tools, checkpoints, and recovery. |
-| [agent-sandbox](crates/agent-sandbox/src/lib.rs) | OS sandbox support for server hosts. |
+| [nazz-core](crates/nazz-core/src/lib.rs) | Identity, scope, grants, and execution context. |
+| [nazz-storage](crates/nazz-storage/src/lib.rs) | Storage, journal, and dispatch traits. |
+| [nazz-runtime](crates/nazz-runtime/src/lib.rs) | Rig execution, tools, checkpoints, and recovery. |
+| [nazz-sandbox](crates/nazz-sandbox/src/lib.rs) | OS sandbox support for server hosts. |
 
 Core contains no database driver, schema, or migrations. Hosts implement the
-storage traits and [WorkerHost](crates/agent-runtime/src/worker.rs), then provide
+storage traits and [WorkerHost](crates/nazz-runtime/src/worker.rs), then provide
 tools, policies, provider access, and budget management.
-Use the [conformance suite](crates/agent-storage/src/conformance.rs) to check
+Use the [conformance suite](crates/nazz-storage/src/conformance.rs) to check
 host storage adapters.
 
 ## Local integration
@@ -27,13 +27,13 @@ Replace `/path/to/nazz-core` with your local checkout:
 
 ```toml
 [dependencies]
-agent-core = { path = "/path/to/nazz-core/crates/agent-core" }
-agent-storage = { path = "/path/to/nazz-core/crates/agent-storage" }
-agent-runtime = { path = "/path/to/nazz-core/crates/agent-runtime" }
+nazz-core = { path = "/path/to/nazz-core/crates/nazz-core" }
+nazz-storage = { path = "/path/to/nazz-core/crates/nazz-storage" }
+nazz-runtime = { path = "/path/to/nazz-core/crates/nazz-runtime" }
 ```
 
-Publishing is disabled. Local dependencies will move to a pinned Git revision
-once the owner commits and pushes the repository.
+Package names use the `nazz-` prefix; Rust imports use `nazz_core`,
+`nazz_storage`, `nazz_runtime`, and `nazz_sandbox`.
 
 ## Development
 
@@ -43,16 +43,41 @@ See [Cargo.toml](Cargo.toml) for the minimum Rust version. Run from the repo roo
 cargo fmt --all -- --check
 cargo clippy --locked --workspace --all-targets -- -D warnings
 cargo test --locked --workspace --lib
-python3 scripts/verify-core-boundary.py
 ```
-
-The verifier checks [source-candidate.json](contracts/source-candidate.json).
-After reviewing source changes, refresh it with `--write-candidate`.
 
 ## CI and platform support
 
 [GitHub Actions](.github/workflows/ci.yml) checks formatting, Clippy, builds,
-unit tests, doctests, documentation, and source boundaries on Linux and macOS.
+unit tests, doctests, documentation, and package builds on Linux and macOS.
 Seatbelt integration tests run on macOS. Linux sandbox integration tests require
-a [suitably configured host](crates/agent-sandbox/src/linux.rs).
+a [suitably configured host](crates/nazz-sandbox/src/linux.rs).
 Windows desktop execution requires a separate host runner.
+
+## Releases
+
+Use Conventional Commits (`feat:`, `fix:`, `feat!:`). After CI passes on `main`,
+[release-plz](release-plz.toml) opens or updates one Release PR with versions and
+changelogs. Review and merge it to release. Tags are per crate, for example
+`nazz-core-v0.1.0`; the workspace shares one version.
+
+The workflow explicitly starts CI for bot Release PRs.
+No extra GitHub token is needed. Repository Actions settings must allow creating
+pull requests. A manual run of [Release-plz](.github/workflows/release.yml) retries
+release processing on the default branch.
+
+Publication setup:
+
+1. Set workspace `publish = ["crates-io"]`,
+   and set `git_only = false` in `release-plz.toml`.
+2. Set `CARGO_REGISTRY_TOKEN` for the first publication. Later, configure
+   [trusted publishing](https://crates.io/docs/trusted-publishing) for each crate:
+   repo `open-ai-sdk/nazz-core`, workflow `release.yml`, environment `crates-io`.
+   Remove the token secret when switching to OIDC.
+3. Protect `nazz-*-v*` tags and set repository variable
+   `CRATES_IO_PUBLISH_ENABLED=true`, then merge the Release PR.
+
+Until then, Release PRs and CI work without publishing crates, tags or releases.
+
+## License
+
+[Apache-2.0](LICENSE). Dependencies retain their original licenses.

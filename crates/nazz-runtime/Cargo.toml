@@ -1,15 +1,19 @@
 [package]
-name = "agent-runtime"
+name = "nazz-runtime"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+license-file.workspace = true
 publish.workspace = true
+repository.workspace = true
+readme.workspace = true
+include = ["src/**", "tests/**", "build.rs", "Cargo.toml"]
 description = "Rig step driver with effect reconciliation. No second inference loop."
 
 [dependencies]
-agent-core.workspace = true
-agent-storage.workspace = true
+nazz-core.workspace = true
+nazz-storage.workspace = true
 rig.workspace = true
 serde.workspace = true
 serde_json.workspace = true

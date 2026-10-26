@@ -1,6 +1,6 @@
 //! Bounded, non-authoritative model deltas. Dropping a subscriber never stops a job.
 //! Hosts create one bus per authorized attempt; durable replay comes from Store.
-use agent_core::AttemptId;
+use nazz_core::AttemptId;
 use serde::{Deserialize, Serialize};
 use tokio::sync::broadcast;
 

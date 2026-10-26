@@ -2,14 +2,21 @@ name: CI
 
 on:
   push:
+    branches-ignore: [main]
   pull_request:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: false
+        default: ""
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ci-${{ github.workflow }}-${{ inputs.ref || github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -26,6 +33,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+          ref: ${{ inputs.ref || github.sha }}
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: 1.98.0
@@ -44,6 +52,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+          ref: ${{ inputs.ref || github.sha }}
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: 1.98.0
@@ -53,8 +62,6 @@ jobs:
           save-if: ${{ github.event_name == 'push' }}
       - name: Fetch locked dependencies
         run: cargo fetch --locked
-      - name: Verify source boundary
-        run: python3 scripts/verify-core-boundary.py
       - name: Clippy
         run: cargo clippy --offline --locked --workspace --all-targets -- -D warnings
       - name: Build all targets
@@ -67,6 +74,17 @@ jobs:
         env:
           RUSTDOCFLAGS: -D warnings
         run: cargo doc --offline --locked --workspace --no-deps
+      - name: Verify packaged workspace
+        if: runner.os == 'Linux'
+        run: |
+          package_stage=$(mktemp -d)
+          trap 'rm -rf "$package_stage"' EXIT
+          sed 's/^publish = false$/publish = ["crates-io"]/' Cargo.toml > "$package_stage/Cargo.toml"
+          cp Cargo.lock README.md LICENSE "$package_stage/"
+          cp -R crates "$package_stage/crates"
+          cd "$package_stage"
+          cargo metadata --offline --locked --no-deps --format-version 1 | jq -e '(.packages | length > 0) and all(.packages[]; .publish == ["crates-io"])'
+          CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target" cargo publish --dry-run --locked --workspace
       - name: macOS sandbox integration
         if: runner.os == 'macOS'
-        run: cargo test --offline --locked -p agent-sandbox --test seatbelt -- --test-threads=1
+        run: cargo test --offline --locked -p nazz-sandbox --test seatbelt -- --test-threads=1

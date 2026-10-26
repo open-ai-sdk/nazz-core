@@ -1,6 +1,6 @@
 #![cfg(target_os = "linux")]
 
-use agent_sandbox::{Observation, SandboxError, SandboxSpec, UnknownReason, spawn_in_grant};
+use nazz_sandbox::{Observation, SandboxError, SandboxSpec, UnknownReason, spawn_in_grant};
 use std::{
     fs,
     path::PathBuf,

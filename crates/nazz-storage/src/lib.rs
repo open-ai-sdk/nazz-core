@@ -6,12 +6,12 @@
 use std::future::Future;
 use std::time::Duration;
 
-use agent_core::{
+use async_trait::async_trait;
+use nazz_core::{
     AccountReference, ActorGrant, AdmissionReceipt, AttemptExecutionBinding, AttemptId,
     AttemptStatus, EffectClaim, EffectId, EffectState, ExecutionSelection, RequestId, ScopeError,
     StopReceipt, TracedEffectIdentity,
 };
-use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use thiserror::Error;
@@ -44,7 +44,7 @@ pub enum StorageError {
     #[error("legacy attempt has no authentic execution context")]
     ContextUnbound,
     #[error(transparent)]
-    Context(#[from] agent_core::ContextError),
+    Context(#[from] nazz_core::ContextError),
     #[error("credential material is not a queue payload")]
     CredentialInPayload,
     #[error("checkpoint format version {0} is refused; pinned version is {1}")]
@@ -162,7 +162,7 @@ impl VerifiedExecutionContext {
     pub fn binding(&self) -> &AttemptExecutionBinding {
         &self.binding
     }
-    pub fn capsule(&self) -> &agent_core::ContextCapsule {
+    pub fn capsule(&self) -> &nazz_core::ContextCapsule {
         &self.binding.capsule
     }
     pub fn attempt_id(&self) -> &AttemptId {

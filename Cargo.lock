@@ -3,53 +3,6 @@
 version = 4
 
 [[package]]
-name = "agent-core"
-version = "0.1.0"
-dependencies = [
- "hex",
- "serde",
- "serde_json",
- "sha2",
- "thiserror",
- "uuid",
-]
-
-[[package]]
-name = "agent-runtime"
-version = "0.1.0"
-dependencies = [
- "agent-core",
- "agent-storage",
- "bytes",
- "hex",
- "reqwest",
- "rig",
- "serde",
- "serde_json",
- "sha2",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "agent-sandbox"
-version = "0.1.0"
-dependencies = [
- "tokio",
-]
-
-[[package]]
-name = "agent-storage"
-version = "0.1.0"
-dependencies = [
- "agent-core",
- "async-trait",
- "serde",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
 name = "aho-corasick"
 version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -771,6 +724,53 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "nazz-core"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
+name = "nazz-runtime"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "hex",
+ "nazz-core",
+ "nazz-storage",
+ "reqwest",
+ "rig",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "nazz-sandbox"
+version = "0.1.0"
+dependencies = [
+ "tokio",
+]
+
+[[package]]
+name = "nazz-storage"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "nazz-core",
+ "serde",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
