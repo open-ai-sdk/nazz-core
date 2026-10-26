@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "2"
+
+jobs:
+  format:
+    name: Rustfmt
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.98.0
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+  quality:
+    name: Rust (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.98.0
+          components: clippy
+      - uses: Swatinem/rust-cache@e9d7b9f1e587218970671bac74e5511ed9506e6a # v2
+        with:
+          save-if: ${{ github.event_name == 'push' }}
+      - name: Fetch locked dependencies
+        run: cargo fetch --locked
+      - name: Verify source boundary
+        run: python3 scripts/verify-core-boundary.py
+      - name: Clippy
+        run: cargo clippy --offline --locked --workspace --all-targets -- -D warnings
+      - name: Build all targets
+        run: cargo build --offline --locked --workspace --all-targets
+      - name: Unit tests
+        run: cargo test --offline --locked --workspace --lib -- --test-threads=1
+      - name: Documentation tests
+        run: cargo test --offline --locked --workspace --doc
+      - name: Build documentation
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --offline --locked --workspace --no-deps
+      - name: macOS sandbox integration
+        if: runner.os == 'macOS'
+        run: cargo test --offline --locked -p agent-sandbox --test seatbelt -- --test-threads=1

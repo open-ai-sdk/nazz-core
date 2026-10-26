@@ -1,0 +1,17 @@
+[package]
+name = "agent-sandbox"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Host-approved operating system sandbox for agent execution."
+
+[dependencies]
+tokio.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
+
+[lints]
+workspace = true

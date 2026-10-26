@@ -1,0 +1,201 @@
+{
+  "schema": "nazz.core-extraction.v1",
+  "captured_at": "2026-10-25T10:12:27.744661+00:00",
+  "source_revision": null,
+  "source_workspace": "nazz",
+  "license_review": "owned generic source candidate; dependency and distribution review pending",
+  "files": [
+    {
+      "path": "crates/agent-core/Cargo.toml",
+      "sha256": "d2f637d80e5b4e8604fc50ab370434a8b73313a0fba30f1315a75639adb3286c"
+    },
+    {
+      "path": "crates/agent-core/src/canonical.rs",
+      "sha256": "fe094b42a67e0a272457a3c657fb11ced5c059f4a37ab715746d51cb5ddc861c"
+    },
+    {
+      "path": "crates/agent-core/src/context.rs",
+      "sha256": "3d6a01d7c2a28b9c05bccd05a0d3185a9dba824571a33ed5f99763e51a7e36ff"
+    },
+    {
+      "path": "crates/agent-core/src/host_bind.rs",
+      "sha256": "0fb3073719538e52f5667325429d1683f8b3c8681ded2a7e69b181e254a5030a"
+    },
+    {
+      "path": "crates/agent-core/src/identity.rs",
+      "sha256": "f119b8d1d8bf6653ab43138302885527f7e29a87bf956d8ebc894a6dcc63e269"
+    },
+    {
+      "path": "crates/agent-core/src/lib.rs",
+      "sha256": "ff54aae6fcf67fb66a6e19aa291c005302527c037ea1cca36c05fadc8d3a9eb5"
+    },
+    {
+      "path": "crates/agent-runtime/Cargo.toml",
+      "sha256": "eab4b1268bfb5083714edab7d277a97310d434c02c67bc9cd399a5a994cdef41"
+    },
+    {
+      "path": "crates/agent-runtime/src/bin/client-outbox.rs",
+      "sha256": "4fdaf14241cd4b355d25e75c892eb98a05e65175c919f8b13035b0e2e62f7ec1"
+    },
+    {
+      "path": "crates/agent-runtime/src/checkpoint_control.rs",
+      "sha256": "a1e5804d541803b9fe449b901960b14bd88c64d9d78b8d90a354c9c3547a13c3"
+    },
+    {
+      "path": "crates/agent-runtime/src/host_control.rs",
+      "sha256": "904fb342ffb66b81e0520cfa8c664474fe3cc5c38f0d787a38133b37ba9a5cc7"
+    },
+    {
+      "path": "crates/agent-runtime/src/http_broker.rs",
+      "sha256": "e16aa884f215bc869f97f3c75356c243af74e6456bb2d5d4a030946b122b5a9a"
+    },
+    {
+      "path": "crates/agent-runtime/src/lib.rs",
+      "sha256": "8386ba912274e52f96dec68fea63dcfb8dac8442519598e0925f6b33c51cbb47"
+    },
+    {
+      "path": "crates/agent-runtime/src/outbox.rs",
+      "sha256": "ef57ccd9664984dd72fb92a3b2369bc3ad7324de6ea147d900a0b8a40d0766d5"
+    },
+    {
+      "path": "crates/agent-runtime/src/provider.rs",
+      "sha256": "ca2365fd84ee897d6cb9c32da53c675ccd967285bd61345ac4ffc4bfd324cdc7"
+    },
+    {
+      "path": "crates/agent-runtime/src/worker.rs",
+      "sha256": "3556f7b23e597a5a813e511485ed1c4c06d5a3a936e8e6cc87e9e37de06659b4"
+    },
+    {
+      "path": "crates/agent-runtime/tests/cancel_before_tool.rs",
+      "sha256": "769372ffea3cf5a0b8342c45c8cf25014c23a3bad9f9178136a4c6a5875b2dd0"
+    },
+    {
+      "path": "crates/agent-runtime/tests/context_execution.rs",
+      "sha256": "58080dfc1fa9baffa2a807f5faf9f53d0686f43d273cae903f05034893228b85"
+    },
+    {
+      "path": "crates/agent-runtime/tests/different_journal_one_effect.rs",
+      "sha256": "9bc359f18ca89049dae14f2fc4d0ecd00d9f1f648a846b21d1d48d330f6b07f1"
+    },
+    {
+      "path": "crates/agent-runtime/tests/lost_order_logical_call.rs",
+      "sha256": "6ffd2c3715ae9c1b54c1db63fb72ae44152dff45169b8a024cc5c7c3438289f6"
+    },
+    {
+      "path": "crates/agent-runtime/tests/outbox_race.rs",
+      "sha256": "859941940257e8c22388341ed7bcc7c8054c3ba1b7c5049c83a220148b4cab89"
+    },
+    {
+      "path": "crates/agent-store/Cargo.toml",
+      "sha256": "8fea75dd405cbf82ae327739aad3fecb4d9fcc4a3bd2577f2a822f4595b65026"
+    },
+    {
+      "path": "crates/agent-store/migrations/0061_nazz_harness_core.sql",
+      "sha256": "b791323c2f71582b5ca077d0fc8e012fee860f7e44a135b3a34317f0c4351d53"
+    },
+    {
+      "path": "crates/agent-store/migrations/0063_harness_neutral_namespace.sql",
+      "sha256": "34815e454367788fd3d88111cd53ef9cdd0cb63772f8ce71fa1fa93e77e3d218"
+    },
+    {
+      "path": "crates/agent-store/migrations/0064_harness_execution_context.sql",
+      "sha256": "dd388f0dd4aa51f1ec85e968ec23b230bf73742f48d148469826f6934a1c55f6"
+    },
+    {
+      "path": "crates/agent-store/src/bin/journal-race.rs",
+      "sha256": "0bf1f22f742b94a83d579b46a611896858a7b5bb959eae335491fbcd6ab5b0c5"
+    },
+    {
+      "path": "crates/agent-store/src/context.rs",
+      "sha256": "199e9dbfe10f9ece686952344539fd50190bfc6116dbe71714c6c0ab1c60a80a"
+    },
+    {
+      "path": "crates/agent-store/src/dispatch.rs",
+      "sha256": "5122f683b2203c17c0cfd50954cc0b8733cdde75020250a52d6ab76ec9ee27d7"
+    },
+    {
+      "path": "crates/agent-store/src/lib.rs",
+      "sha256": "8d49d3fb6c5762c8cd28ea5382365401d7c659718d62d92e259f19f61e5801cb"
+    },
+    {
+      "path": "crates/agent-store/src/migration.rs",
+      "sha256": "20fb1794f20f321c89bc13b7793c4d111b38c8925f5fbefcae5e52fa847a013d"
+    },
+    {
+      "path": "crates/agent-store/tests/admit_lease.rs",
+      "sha256": "f5109c3a738f5219cfe341b691b62cadf26e7457fe4107513870cb4530f36b8c"
+    },
+    {
+      "path": "crates/agent-store/tests/dispatch_outbox.rs",
+      "sha256": "216afe8fa37603c7ddc7a780b9d4793958ace190ce141a85919530903f6cdbe1"
+    },
+    {
+      "path": "crates/agent-store/tests/effect_authority_linearization.rs",
+      "sha256": "4a94dfd1c31d682fb3498c07fc8c194aaa543882c21d9a7e6319ae7b6f7e81a0"
+    },
+    {
+      "path": "crates/agent-store/tests/effect_schema_upgrade.rs",
+      "sha256": "56c41a242b1b53f5c1e64d2007a1d92cccdab103409fede5efaf3969f20f084d"
+    },
+    {
+      "path": "crates/agent-store/tests/execution_context.rs",
+      "sha256": "ca14d3562d637e1d7b430f351d340a76d1fee72309902b4f81f7c2df6c010c57"
+    },
+    {
+      "path": "crates/agent-store/tests/journal_race.rs",
+      "sha256": "58d9d91a0547984b9c8e36a60585423157f924d22035f0b4a37389cd9a2b76da"
+    },
+    {
+      "path": "crates/agent-store/tests/logical_call_identity.rs",
+      "sha256": "c44744f25996ae872ea6e8e2629280edace29227697637fdeea8f89c78105812"
+    },
+    {
+      "path": "crates/agent-store/tests/state_transitions.rs",
+      "sha256": "5b9f10d48f9f41397b3d50496fa7c2d4857065c92fed969b18b10aff6573d685"
+    },
+    {
+      "path": "crates/agent-store/tests/stop_effect_invariants.rs",
+      "sha256": "abc9e1cfc460589a7006d03a7eeb8ca0e9eaa441373e4f20f17ff39a922df385"
+    },
+    {
+      "path": "crates/agent-store/tests/tenant_effect_scope.rs",
+      "sha256": "cb3f0992a02aec52f376463dfeb92ae9adaf28aab124cc3d22ccd1f3e68c705a"
+    },
+    {
+      "path": "crates/agent-sandbox/Cargo.toml",
+      "sha256": "0dd6683a86054d57909cc1e7744375bd2fa9b7737ed047f0dc7ce4721775346c"
+    },
+    {
+      "path": "crates/agent-sandbox/build.rs",
+      "sha256": "38fb269073430206fa2da49f77cedba29c1ea94e651c6292d502989735373c24"
+    },
+    {
+      "path": "crates/agent-sandbox/src/lib.rs",
+      "sha256": "6bf56824d2564bdb6d19c63b3b35ffcf357063f531093560a7ec855582675483"
+    },
+    {
+      "path": "crates/agent-sandbox/src/linux.rs",
+      "sha256": "564c03146d6a31409e52237a199067e5fc438039f0c2be3610849d96f9fe315f"
+    },
+    {
+      "path": "crates/agent-sandbox/src/linux_launcher.c",
+      "sha256": "f69a36534b456e9974ebbfcc25912871da1f258f09475f4e0d9164f34d66a285"
+    },
+    {
+      "path": "crates/agent-sandbox/src/policy.rs",
+      "sha256": "e0a5ddf427683316bc9be8b614370843821063feadeb57920302ffa2e7421678"
+    },
+    {
+      "path": "crates/agent-sandbox/tests/fixtures/probe_child.c",
+      "sha256": "80778571936381a47a8fe0a327260c254f07d6b35718a7d74526d358bb17cf43"
+    },
+    {
+      "path": "crates/agent-sandbox/tests/linux.rs",
+      "sha256": "21b9b5b5d90da667601161e1743807b7ce662f72c7d415b94cf8eade52d7ec52"
+    },
+    {
+      "path": "crates/agent-sandbox/tests/seatbelt.rs",
+      "sha256": "4b777fa829d7559d2162aec94897c55a48640bf3859ab837a8b7b8ed2fd6e9ee"
+    }
+  ]
+}
