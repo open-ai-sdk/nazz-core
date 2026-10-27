@@ -622,6 +622,18 @@ where
         ),
         "a foreign tenant minted a scoped reconciliation capability",
     )?;
+
+    require(
+        matches!(
+            store.reconcile_effect(&verified_reconciliation).await,
+            Err(StorageError::ReconciliationLeaseActive)
+        ),
+        "reconciliation stole an original live lease",
+    )?;
+    store
+        .release_lease(&grant, &reconcile_attempt, 1, HOLDER)
+        .await?;
+
     let mut wrong_digest_binding = reconcile_binding.clone();
     wrong_digest_binding.args_digest.push_str("-wrong");
     let wrong_digest = VerifiedEffectReconciliation::mint_trusted(
@@ -757,16 +769,6 @@ where
         ),
         "reconciliation accepted a stale ledger revision",
     )?;
-    require(
-        matches!(
-            store.reconcile_effect(&verified_reconciliation).await,
-            Err(StorageError::ReconciliationLeaseActive)
-        ),
-        "reconciliation stole an original live lease",
-    )?;
-    store
-        .release_lease(&grant, &reconcile_attempt, 1, HOLDER)
-        .await?;
     let blocked_generation = store
         .claim_lease(&grant, &reconcile_attempt, 2, OTHER_HOLDER, lease_ttl)
         .await;
