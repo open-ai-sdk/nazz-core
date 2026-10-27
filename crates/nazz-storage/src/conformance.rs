@@ -77,17 +77,21 @@ fn selection(grant: &ActorGrant) -> ExecutionSelection {
     )
 }
 
+struct UnknownEffectFixture<'a> {
+    attempt_id: &'a AttemptId,
+    holder: &'a str,
+    scope: &'a str,
+    revision: &'a str,
+    tool_name: &'a str,
+    call_id: &'a str,
+    args: &'a serde_json::Value,
+    lease_ttl: std::time::Duration,
+}
+
 async fn start_unknown_effect<S: ExecutionStore>(
     store: &S,
     grant: &ActorGrant,
-    attempt_id: &AttemptId,
-    holder: &str,
-    scope: &str,
-    revision: &str,
-    tool_name: &str,
-    call_id: &str,
-    args: &serde_json::Value,
-    lease_ttl: std::time::Duration,
+    fixture: UnknownEffectFixture<'_>,
 ) -> Result<
     (
         nazz_core::TracedEffectIdentity,
@@ -96,23 +100,36 @@ async fn start_unknown_effect<S: ExecutionStore>(
     ConformanceError,
 > {
     store
-        .claim_lease(grant, attempt_id, 1, holder, lease_ttl)
+        .claim_lease(
+            grant,
+            fixture.attempt_id,
+            1,
+            fixture.holder,
+            fixture.lease_ttl,
+        )
         .await?;
-    let traced = trace_effect_identity(attempt_id, call_id, args);
+    let traced = trace_effect_identity(fixture.attempt_id, fixture.call_id, fixture.args);
     store
         .bind_approval(
             grant,
-            attempt_id,
+            fixture.attempt_id,
             1,
-            holder,
-            scope,
-            revision,
+            fixture.holder,
+            fixture.scope,
+            fixture.revision,
             &traced.canonical.args_digest,
         )
         .await?;
     let fresh = match store
         .claim_traced_effect(
-            grant, holder, scope, revision, attempt_id, 1, tool_name, &traced,
+            grant,
+            fixture.holder,
+            fixture.scope,
+            fixture.revision,
+            fixture.attempt_id,
+            1,
+            fixture.tool_name,
+            &traced,
         )
         .await?
     {
@@ -126,11 +143,11 @@ async fn start_unknown_effect<S: ExecutionStore>(
     let launch = store
         .with_effect_launch(
             grant,
-            holder,
-            scope,
-            revision,
+            fixture.holder,
+            fixture.scope,
+            fixture.revision,
             &fresh.claim,
-            lease_ttl,
+            fixture.lease_ttl,
             || async { Err::<serde_json::Value, ()>(()) },
         )
         .await?;
@@ -142,10 +159,16 @@ async fn start_unknown_effect<S: ExecutionStore>(
     unknown.state = EffectState::NeedsReconcile;
     unknown.receipt = None;
     store
-        .record_effect(grant, holder, scope, revision, &unknown)
+        .record_effect(
+            grant,
+            fixture.holder,
+            fixture.scope,
+            fixture.revision,
+            &unknown,
+        )
         .await?;
     let Some(binding) = store
-        .read_effect_reconciliation_binding(grant, attempt_id, &fresh.claim.effect_id)
+        .read_effect_reconciliation_binding(grant, fixture.attempt_id, &fresh.claim.effect_id)
         .await?
     else {
         return Err(ConformanceError::Assertion(
@@ -527,14 +550,16 @@ where
     let (reconcile_trace, reconcile_binding) = start_unknown_effect(
         store,
         &grant,
-        &reconcile_attempt,
-        HOLDER,
-        SCOPE,
-        REVISION,
-        "conformance_tool",
-        "reconcile-call",
-        &reconcile_args,
-        lease_ttl,
+        UnknownEffectFixture {
+            attempt_id: &reconcile_attempt,
+            holder: HOLDER,
+            scope: SCOPE,
+            revision: REVISION,
+            tool_name: "conformance_tool",
+            call_id: "reconcile-call",
+            args: &reconcile_args,
+            lease_ttl,
+        },
     )
     .await?;
     require(
@@ -898,14 +923,16 @@ where
     let (negative_trace, negative_binding) = start_unknown_effect(
         store,
         &grant,
-        &negative_attempt,
-        HOLDER,
-        SCOPE,
-        REVISION,
-        "conformance_tool",
-        "negative-call",
-        &negative_args,
-        lease_ttl,
+        UnknownEffectFixture {
+            attempt_id: &negative_attempt,
+            holder: HOLDER,
+            scope: SCOPE,
+            revision: REVISION,
+            tool_name: "conformance_tool",
+            call_id: "negative-call",
+            args: &negative_args,
+            lease_ttl,
+        },
     )
     .await?;
     let negative_evidence = EffectReconciliationEvidence {
@@ -1183,14 +1210,16 @@ where
     let (_stop_trace, _stop_binding) = start_unknown_effect(
         store,
         &grant,
-        &stop_attempt,
-        HOLDER,
-        SCOPE,
-        REVISION,
-        "conformance_tool",
-        "stop-call",
-        &stop_args,
-        lease_ttl,
+        UnknownEffectFixture {
+            attempt_id: &stop_attempt,
+            holder: HOLDER,
+            scope: SCOPE,
+            revision: REVISION,
+            tool_name: "conformance_tool",
+            call_id: "stop-call",
+            args: &stop_args,
+            lease_ttl,
+        },
     )
     .await?;
     store.request_cancel(&grant, &stop_attempt, 1).await?;
@@ -1304,14 +1333,16 @@ where
     let (_, revoked_binding) = start_unknown_effect(
         store,
         &grant,
-        &revoked_reconcile_attempt,
-        HOLDER,
-        SCOPE,
-        REVISION,
-        "conformance_tool",
-        "revoked-reconciler-call",
-        &json!({"action":"verify-revoked-principal","namespace":namespace}),
-        lease_ttl,
+        UnknownEffectFixture {
+            attempt_id: &revoked_reconcile_attempt,
+            holder: HOLDER,
+            scope: SCOPE,
+            revision: REVISION,
+            tool_name: "conformance_tool",
+            call_id: "revoked-reconciler-call",
+            args: &json!({"action":"verify-revoked-principal","namespace":namespace}),
+            lease_ttl,
+        },
     )
     .await?;
     let revoked_evidence = EffectReconciliationEvidence {
