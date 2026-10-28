@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/open-ai-sdk/nazz-core/compare/nazz-runtime-v0.1.0...nazz-runtime-v0.2.0) - 2026-10-28
+
+### Added
+
+- *(storage)* [**breaking**] add evidence-bound reconciliation ([#2](https://github.com/open-ai-sdk/nazz-core/pull/2))
+
 ## [0.1.0](https://github.com/open-ai-sdk/nazz-core/releases/tag/nazz-runtime-v0.1.0) - 2026-10-26
 
 ### Added
