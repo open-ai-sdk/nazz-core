@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/nazz-core", "crates/nazz-runtime", "crates/nazz-storage", "crates/nazz-sandbox"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.95.0"
 license = "Apache-2.0"
@@ -13,10 +13,10 @@ repository = "https://github.com/open-ai-sdk/nazz-core"
 readme = "README.md"
 
 [workspace.dependencies]
-nazz-core = { version = "=0.1.0", path = "crates/nazz-core" }
-nazz-storage = { version = "=0.1.0", path = "crates/nazz-storage" }
-nazz-runtime = { version = "=0.1.0", path = "crates/nazz-runtime" }
-nazz-sandbox = { version = "=0.1.0", path = "crates/nazz-sandbox" }
+nazz-core = { version = "=0.2.0", path = "crates/nazz-core" }
+nazz-storage = { version = "=0.2.0", path = "crates/nazz-storage" }
+nazz-runtime = { version = "=0.2.0", path = "crates/nazz-runtime" }
+nazz-sandbox = { version = "=0.2.0", path = "crates/nazz-sandbox" }
 rig = { version = "=0.44.0", default-features = false, features = ["agent", "image"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

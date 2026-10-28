@@ -8,9 +8,9 @@ use std::time::Duration;
 
 use async_trait::async_trait;
 use nazz_core::{
-    AccountReference, ActorGrant, AdmissionReceipt, AttemptExecutionBinding, AttemptId,
+    AccountReference, ActorGrant, ActorId, AdmissionReceipt, AttemptExecutionBinding, AttemptId,
     AttemptStatus, EffectClaim, EffectId, EffectState, ExecutionSelection, RequestId, ScopeError,
-    StopReceipt, TracedEffectIdentity,
+    StopReceipt, TenantId, TracedEffectIdentity, WorkspaceId,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -41,6 +41,15 @@ pub enum StorageError {
     StopMismatch,
     #[error("needs_reconcile hold: unresolved effects block generation advance")]
     NeedsReconcileHold,
+
+    #[error("reconciliation candidate is not a durable-started unresolved effect")]
+    InvalidReconciliationCandidate,
+    #[error("reconciliation evidence is missing or incomplete")]
+    ReconciliationEvidenceMissing,
+    #[error("reconciliation conflicts with the persisted binding or ledger revision")]
+    ReconciliationConflict,
+    #[error("the original effect lease is still live")]
+    ReconciliationLeaseActive,
     #[error("legacy attempt has no authentic execution context")]
     ContextUnbound,
     #[error(transparent)]
@@ -86,6 +95,137 @@ pub enum ExclusiveClaim {
     Fresh(EffectBinding),
     KnownReceipt(EffectBinding),
     Existing(EffectBinding),
+}
+
+/// Exact immutable identity read from the host ledger before evidence review.
+/// The host must compare every field again inside the reconciliation transaction.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EffectReconciliationBinding {
+    pub tenant_id: TenantId,
+    pub workspace_id: WorkspaceId,
+    pub actor_id: ActorId,
+    pub grant_revision: u64,
+    pub attempt_id: AttemptId,
+    pub effect_id: EffectId,
+    pub generation: u64,
+    pub holder: String,
+    pub tool_name: String,
+    pub args_digest: String,
+    pub scope: String,
+    pub tool_revision: String,
+    pub ledger_revision: u64,
+    pub durable_started: bool,
+    pub state: EffectState,
+}
+
+/// Reference to an immutable record already persisted by the host evidence
+/// ledger. `digest` and `provenance` are rechecked atomically with promotion.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EffectReconciliationEvidence {
+    pub evidence_id: String,
+    pub digest: String,
+    pub provenance: String,
+}
+
+/// Verified outcome associated with reconciliation evidence. A proven
+/// no-start carries the exact negative result transparently through the
+/// existing receipt path; its proof kind is recorded separately here.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum EffectReconciliationResult {
+    Receipt { value: Value },
+    ProvenNotStarted { value: Value },
+}
+
+impl EffectReconciliationResult {
+    /// Exact value stored in the existing effect receipt field.
+    pub fn receipt_value(&self) -> Value {
+        match self {
+            Self::Receipt { value } | Self::ProvenNotStarted { value } => value.clone(),
+        }
+    }
+}
+
+/// Host-minted capability; deliberately not serializable. Only a host verifier
+/// with a current, non-revoked principal may call `mint_trusted`, after verifying
+/// persisted evidence for this exact scope and binding. The store rechecks the
+/// principal's grant, evidence, and CAS revision inside the atomic transaction.
+#[derive(Debug, Clone)]
+pub struct VerifiedEffectReconciliation {
+    principal: ActorGrant,
+    binding: EffectReconciliationBinding,
+    evidence: EffectReconciliationEvidence,
+    result: EffectReconciliationResult,
+}
+
+impl VerifiedEffectReconciliation {
+    pub fn mint_trusted(
+        principal: ActorGrant,
+        binding: EffectReconciliationBinding,
+        evidence: EffectReconciliationEvidence,
+        result: EffectReconciliationResult,
+    ) -> Result<Self, StorageError> {
+        if principal.revoked
+            || principal.tenant_id != binding.tenant_id
+            || principal.workspace_id != binding.workspace_id
+            || binding.state != EffectState::NeedsReconcile
+            || !binding.durable_started
+            || binding.grant_revision == 0
+            || binding.ledger_revision == 0
+            || binding.actor_id.as_str().is_empty()
+            || binding.holder.is_empty()
+            || binding.tool_name.is_empty()
+            || binding.args_digest.is_empty()
+            || binding.scope.is_empty()
+            || binding.tool_revision.is_empty()
+        {
+            return Err(StorageError::InvalidReconciliationCandidate);
+        }
+        if evidence.evidence_id.is_empty()
+            || evidence.digest.is_empty()
+            || evidence.provenance.is_empty()
+        {
+            return Err(StorageError::ReconciliationEvidenceMissing);
+        }
+        Ok(Self {
+            principal,
+            binding,
+            evidence,
+            result,
+        })
+    }
+
+    pub fn principal(&self) -> &ActorGrant {
+        &self.principal
+    }
+
+    pub fn binding(&self) -> &EffectReconciliationBinding {
+        &self.binding
+    }
+
+    pub fn evidence(&self) -> &EffectReconciliationEvidence {
+        &self.evidence
+    }
+
+    pub fn result(&self) -> &EffectReconciliationResult {
+        &self.result
+    }
+}
+
+/// Immutable evidence/result association committed with the effect transition.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EffectReconciliationRecord {
+    pub principal: ActorGrant,
+    pub binding: EffectReconciliationBinding,
+    pub evidence: EffectReconciliationEvidence,
+    pub result: EffectReconciliationResult,
+    pub committed_revision: u64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum EffectReconciliationOutcome {
+    Applied(EffectReconciliationRecord),
+    AlreadyApplied(EffectReconciliationRecord),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -388,6 +528,41 @@ pub trait ExecutionStore: Send + Sync {
         grant: &ActorGrant,
         effect_id: &EffectId,
     ) -> Result<Option<EffectClaim>, StorageError>;
+
+    /// Return the complete historical binding and current per-effect ledger
+    /// revision used to verify evidence. This read does not lease or mutate the
+    /// effect; the host must not substitute a caller-supplied holder or actor.
+    async fn read_effect_reconciliation_binding(
+        &self,
+        principal: &ActorGrant,
+        attempt_id: &AttemptId,
+        effect_id: &EffectId,
+    ) -> Result<Option<EffectReconciliationBinding>, StorageError>;
+    /// Persist an immutable host-verified evidence association for later
+    /// commit-time revalidation. Only a trusted verifier may pass this
+    /// non-deserializable capability; this operation does not promote effects.
+    async fn persist_verified_effect_reconciliation_evidence(
+        &self,
+        reconciliation: &VerifiedEffectReconciliation,
+    ) -> Result<(), StorageError>;
+
+    /// Atomically recheck the persisted evidence reference, its exact binding,
+    /// proof digest, provenance, result, and the current non-revoked principal
+    /// grant in the same transaction as the effect CAS. Require durable-started
+    /// state, the expected ledger revision, and an expired/fenced original lease
+    /// before appending the immutable record and promoting only that effect.
+    /// Exact replay is idempotent; a different proof/result or stale revision is
+    /// a conflict, never last-write-wins.
+    ///
+    /// This operation is history-only: it must not recreate a lease, advance
+    /// generation, relaunch the effect, reopen cancellation/Stop/approval
+    /// holds, or authorize work after grant revocation. It may release only the
+    /// existing unknown-effect outbox hold when every unknown effect is
+    /// resolved and no independent barrier remains.
+    async fn reconcile_effect(
+        &self,
+        reconciliation: &VerifiedEffectReconciliation,
+    ) -> Result<EffectReconciliationOutcome, StorageError>;
 
     async fn read_attempt_context(
         &self,

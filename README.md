@@ -17,7 +17,10 @@ Runtime telemetry uses `agent-model`, `agent-provider`, and `agent-stop` prefixe
 
 Core contains no database driver, schema, or migrations. Hosts implement the
 storage traits and [WorkerHost](crates/nazz-runtime/src/worker.rs), then provide
-tools, policies, provider access, and budget management.
+tools, policies, provider access, and budget management. Reconciliation is
+history-only: hosts mint a non-serializable capability after verifying
+persisted evidence, then atomically recheck its exact effect binding and ledger
+revision before recording a receipt or a typed proven-not-started result.
 Use the [conformance suite](crates/nazz-storage/src/conformance.rs) to check
 host storage adapters.
 
@@ -58,7 +61,7 @@ Windows desktop execution requires a separate host runner.
 Use Conventional Commits (`feat:`, `fix:`, `feat!:`). After CI passes on `main`,
 [release-plz](release-plz.toml) opens or updates one Release PR with versions and
 changelogs. Review and merge it to release. Tags are per crate, for example
-`nazz-core-v0.1.0`; the workspace shares one version.
+`nazz-core-v0.2.0`; the workspace shares one version.
 
 The workflow explicitly starts CI for bot Release PRs.
 No extra GitHub token is needed. Repository Actions settings must allow creating
